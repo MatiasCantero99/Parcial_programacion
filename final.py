@@ -2,6 +2,11 @@ import json
 import re
 
 def leer_archivo(archivo_json:str) -> list:
+    """
+    Lee un archivo json
+    recive el archivo json por parametro 
+    devuelve una lista con jugadores nba
+    """
     lista_nba = []
     with open(archivo_json,"r") as archivo:
         diccionario = json.load(archivo)
@@ -12,7 +17,12 @@ ruta = r"C:\Users\User\Documents\1 Cuatrimestre UTN Programacion\parcial\dt.json
 
 lista_nba = leer_archivo(ruta)
 
-def muestra_jugador_posicion(lista:list) -> list:
+def muestra_jugador_posicion(lista:list):
+    """
+    muestra el nombre del jugador y su posicion en la cancha
+    recive una lista por parametro
+    no devuelve nada
+    """
     mensaje = ""
     contador = 0
     for jugador in lista:
@@ -21,6 +31,11 @@ def muestra_jugador_posicion(lista:list) -> list:
     print(mensaje)
 
 def muestra_estadistica_por_indice(indice:int,lista:list) -> bool:
+    """
+    muestra las estadisticas de un jugador por su indice
+    recive un indice y una lista por parametro
+    devuelve un bool True o False
+    """
     flag = False
     mensaje = "{0}:\n".format(lista[indice]["nombre"])
     for clave,valor in lista[indice]["estadisticas"].items():
@@ -31,6 +46,11 @@ def muestra_estadistica_por_indice(indice:int,lista:list) -> bool:
         return flag
 
 def guardar_csv(ruta:str,texto:str):
+    """
+    Guarda en un archivo csv
+    recive una ruta donde se alojara el archivo y un texto que estara dentro por parametro
+    no retorna nada
+    """
     flag_resultado = False
     with open(ruta,"w+") as archivo:
         byte = archivo.write(texto) 
@@ -40,36 +60,13 @@ def guardar_csv(ruta:str,texto:str):
         print("Se creó el archivo: {0}".format(ruta))
     else:
         print("Error al crear el archivo: {0}".format(ruta))
-    return flag_resultado
-
-def calcular_max(lista:list,clave:str) -> list:
-    lista_maximos = []
-    maximo = None
-    jugador_max = ""
-    for jugador in lista:
-        if maximo == None or jugador["estadisticas"][clave] > maximo:
-            maximo = jugador["estadisticas"][clave]
-            jugador_max = jugador["nombre"]
-    lista_maximos.append(maximo)
-    lista_maximos.append(jugador_max)
-    return lista_maximos
-
-def calcular_min(lista:list,clave:str):
-    min = None
-    for jugador in lista:
-        if(min == None or jugador["estadisticas"][clave] < min):
-            min = jugador[clave]
-            jugador_min = jugador["nombre"]
-    return jugador_min
-
-def calcular_max_min_dato(lista:list,calculo_a_realizar:str,dato:str) -> list:
-    if calculo_a_realizar == "maximo":
-        pedido = calcular_max(lista,dato)
-    else:
-        pedido = calcular_min(lista,dato)
-    return pedido
 
 def crear_texto_por_indice(indice:int,lista:list,flag:bool):
+    """
+    Crea un texto en formato csv para despues guardarlo siempre y cuando usaste el punto 2
+    recive un indice, una lista y un flag por parametro
+    No retorna nada sino que manda el archivo a guardar_csv
+    """
     if flag:
         lista_valores = []
         claves = list(lista[indice].keys()) 
@@ -91,11 +88,63 @@ def crear_texto_por_indice(indice:int,lista:list,flag:bool):
         texto_claves = ",".join(claves)
         texto_csv = texto_claves + '\n' + texto_valores
         ruta = "{0}.csv".format(lista[indice]["nombre"])
-        flag = guardar_csv(ruta,texto_csv)
+        guardar_csv(ruta,texto_csv)
     else:
         print("No usaste punto 2")
+
+def calcular_max(lista:list,clave:str) -> list:
+    """
+    Calcula el max de una lista
+    Recibe una lista y una clave por parametro
+    devuelve una lista con el nombre y el valor maximo de la clave que buscaste
+    """
+    lista_maximos = []
+    maximo = None
+    jugador_max = ""
+    for jugador in lista:
+        if maximo == None or jugador["estadisticas"][clave] > maximo:
+            maximo = jugador["estadisticas"][clave]
+            jugador_max = jugador["nombre"]
+    lista_maximos.append(maximo)
+    lista_maximos.append(jugador_max)
+    return lista_maximos
+
+def calcular_min(lista:list,clave:str) -> list:
+    """
+    Calcula el min de una lista
+    Recibe una lista y una clave por parametro
+    devuelve una lista con el nombre y el valor minimo de la clave que buscaste
+    """
+    lista_minimos = []
+    min = None
+    jugador_min = ""
+    for jugador in lista:
+        if(min == None or jugador["estadisticas"][clave] < min):
+            min = jugador[clave]
+            jugador_min = jugador["nombre"]
+    lista_minimos.append(min)
+    lista_minimos.append(jugador_min)
+    return jugador_min
+
+def calcular_max_min_dato(lista:list,calculo_a_realizar:str,dato:str) -> list:
+    """
+    Calcular max o min dependiendo lo que pediste y lo envia a otra funcion
+    Recibe una lista, el calculo que queres realizar y un dato por parametro
+    Devuelve una lista proporcionada por calcular_min o calcular_max
+    """
+    if calculo_a_realizar == "maximo":
+        pedido = calcular_max(lista,dato)
+    else:
+        pedido = calcular_min(lista,dato)
+    return pedido
+
     
 def busca_y_muestra_por_nombre(nombre:str,lista:list,opcion:int):
+    """
+    Busca por el nombre del jugador
+    Recibe una lista, el nombre a buscar y la opcion por parametro
+    No devuelve nada
+    """
     patron = rf"{nombre}"
     segundo_patron = r"^Miembro del Salon de la Fama del Baloncesto$"
     mensaje = ""
@@ -115,7 +164,12 @@ def busca_y_muestra_por_nombre(nombre:str,lista:list,opcion:int):
                         mensaje = "El jugador {0} no es HALL OF FAME".format(jugador["nombre"])
                     print(mensaje)
 
-def quick_sort_estadistica(lista:list,clave:str,flag:bool):
+def quick_sort_estadistica(lista:list,clave:str,flag:bool) -> list:
+    """
+    Es un algoritmo de ordenamiento basado en las estadisticas
+    Recibe una lista, clave y el flag para asc o desc por parametro
+    Retorna una lista ordenada de forma asc o desc
+    """
     lista_de = []
     lista_iz = []
     if len(lista) <= 1:
@@ -135,23 +189,43 @@ def quick_sort_estadistica(lista:list,clave:str,flag:bool):
     return lista_iz
 
 def suma(lista:list,clave:str) -> int|float:
+    """
+    Suma valores de las estadisticas
+    Recibe una lista y una clave por parametro
+    Retorna la suma en int o float dependiendo sus valores
+    """
     suma = 0
     for jugador in lista:
         suma += jugador["estadisticas"][clave]
     return suma
 
-def suma_logros(lista:list,clave:str) -> int|float:
+def suma_logros(lista:list,clave:str) -> int:
+    """
+    Suma los logros de los jugadores
+    Recibe una lista y una clave por parametro
+    Retorna la suma en int
+    """
     suma = 0
     for jugador in lista:
         suma += len(jugador[clave])
     return suma
 
 def sacar_promedio(suma:int,lista:list) -> float:
+    """
+    Saca el promedio
+    Recibe una suma echa y una lista por parametro
+    Retorna el promedio echo
+    """
     cantida_lista = len(lista)
     promedio = suma / cantida_lista
     return promedio
 
 def quick_sort(lista:list,clave:str,flag:bool):
+    """
+    Es un algoritmo de ordenamiento de forma asc o desc
+    Recibe una lista, una clave y un flag por parametro
+    No retorna nada
+    """
     lista_de = []
     lista_iz = []
     if len(lista) <= 1:
@@ -177,6 +251,11 @@ def quick_sort(lista:list,clave:str,flag:bool):
     return lista_iz
 
 def muestra_jugadores_mayor_que_valor_dado(valor:int,clave:str,lista:list):
+    """
+    Muestra los jugadores que superen cierto valor
+    Recibe un valor, una clave y una lista por parametro
+    No retorna nada
+    """
     lista_maximos = calcular_max_min_dato(lista,"maximo",clave)
     if valor < lista_maximos[0]:
         mensaje = "Los jugadores que promedian mas que {0} son:\n".format(valor)
@@ -188,6 +267,11 @@ def muestra_jugadores_mayor_que_valor_dado(valor:int,clave:str,lista:list):
         print("No hay jugadores que promediaron mas que {0}".format(valor))
 
 def muestra_jugador_por_posicion(lista:list,clave:str,lista_posicion:list,valor:int):
+    """
+    Muestra los jugadores que superen cierto valor pero por posicion
+    Recibe una lista, una clave, otra lista pero de posicion y un valor por parametro
+    No retorna nada
+    """
     lista_maximos = calcular_max_min_dato(lista,"maximo",clave)
     if valor < lista_maximos[0]:
         contador = 0
@@ -202,7 +286,48 @@ def muestra_jugador_por_posicion(lista:list,clave:str,lista_posicion:list,valor:
     else:
         print("No hay jugadores que promediaron mas que {0}".format(valor))
 
+def crea_ranking_dream_team(lista:list,lista_titulo:list):
+    """
+    Crea un texto del ranking del dream team para mandar a guardar a csv
+    Recibe una lista de los jugadores y una lista con el titulo del archivo por parametro
+    No retorna nada
+    """
+    lista_puntos = quick_sort_estadistica(lista,"puntos_totales",False)
+    lista_asistencia = quick_sort_estadistica(lista,"asistencias_totales",False)
+    lista_rebotes = quick_sort_estadistica(lista,"rebotes_totales",False)
+    lista_robos = quick_sort_estadistica(lista,"robos_totales",False)
+    titulo = ",".join(lista_titulo)
+    mensaje = ""
+    for jugador in lista:
+        for i in range(len(lista_puntos)):
+            if re.match(jugador["nombre"], lista_puntos[i]["nombre"]):
+                indice_puntos = i + 1
+                break
+
+        for i in range(len(lista_rebotes)):
+            if re.match(jugador["nombre"], lista_rebotes[i]["nombre"]):
+                indice_rebotes = i + 1
+                break
+
+        for i in range(len(lista_asistencia)):
+            if re.match(jugador["nombre"], lista_asistencia[i]["nombre"]):
+                indice_asistencias = i + 1
+                break
+
+        for i in range(len(lista_robos)):
+            if re.match(jugador["nombre"], lista_robos[i]["nombre"]):
+                indice_robos = i + 1
+                break
+        mensaje += "{0},{1},{2},{3},{4}\n".format(jugador["nombre"], indice_puntos, indice_rebotes, indice_asistencias, indice_robos)
+    texto_csv = titulo + "\n" + mensaje
+    guardar_csv("Ranking_DreamTeam.csv",texto_csv)
+                    
 def imprimir_menu():
+    """
+    Imprime el menu
+    No recibe nada
+    No retorna nada
+    """
     print("Menú de opciones:")
     print("1. Muestra nombre y posicin del Dream Team")  
     print("2. Selecciona un jugador por indice y muestra sus estadisticas")
@@ -228,13 +353,23 @@ def imprimir_menu():
     print("0. Salir del menu")
 
 def validar_entero(numero:str) -> bool:
+    """
+    Valida un numero entero para el menu
+    Recibe un numero entero
+    Retorna un bool True o False
+    """
     patron = r"^(?:[0-9]|1[0-9]|2[0-3])$"
     if re.match(patron, str(numero)):
         return True
     else:
         return False
 
-def nba_menu_principal():
+def nba_menu_principal() -> int:
+    """
+    Manda a imprimir el menu principal y pide la opcion que quieras
+    No recibe nada
+    Retorna la opcion casteada a int o -1
+    """
     imprimir_menu()
     opcion = input("\nIngrese la opción deseada: ")
     booleano = validar_entero(opcion)
@@ -245,6 +380,11 @@ def nba_menu_principal():
         return -1
 
 def nba_app(lista_jugadores:list):
+    """
+    Corre la app haciendo lo que pediste por el menu
+    Recibe una lista por parametro
+    No retorna nada
+    """
     flag_case_2 = False
     while(True):
         opcion_int = nba_menu_principal()
@@ -377,7 +517,9 @@ def nba_app(lista_jugadores:list):
                     else:
                         print("Solo numeros enteros")
                 case 23:
-                    pass
+                    lista_titulo = ["Jugador","Puntos","Rebotes","Asistencias","Robos"]
+                    crea_ranking_dream_team(lista_jugadores,lista_titulo)
+
                 case 0:
                     break
                 case _:
@@ -386,4 +528,5 @@ def nba_app(lista_jugadores:list):
             print("Opcion no valida,numeros del 0 al 23 sin el 21 o 22")
         
 nba_app(lista_nba)
+#Ivan Matias Cantero
 
