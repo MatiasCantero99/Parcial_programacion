@@ -504,9 +504,15 @@ def nba_app(lista_jugadores:list):
                 case 19:
                     clave = "temporadas"
                     lista_maximo = calcular_max_min_dato(lista_jugadores,"maximo",clave)
+                    lista_jugador = []
                     suma_final = suma(lista_jugadores,clave)
-                    mensaje = "La cantidad de temporadas totales es de: {0} siendo {1} el jugador con la cantidad mas alta de: {2}".format(suma_final,lista_maximo[1],lista_maximo[0])
-                    print(mensaje)
+                    mensaje = "La cantidad de temporadas totales es de: {0} siendo ".format(suma_final)
+                    for jugador in lista_jugadores:
+                        if lista_maximo[0] == jugador["estadisticas"]["temporadas"]:
+                            lista_jugador.append(jugador["nombre"])
+                    texto = ",".join(lista_jugador)
+                    mensaje += texto + " los maximos con {0} temporadas".format(lista_maximo[0])
+                    print(mensaje) 
                 case 20:
                     clave = "porcentaje_tiros_de_campo"
                     lista_posicion = ["Base","Escolta","Alero","Ala-Pivot","Pivot"]
