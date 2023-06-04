@@ -7,7 +7,7 @@ def leer_archivo(archivo_json:str) -> list:
         lista_nba = diccionario["jugadores"]
     return lista_nba
 
-ruta = r"C:\Users\User\Documents\1 Cuatrimestre UTN Programacion\parcial\dt.json"
+ruta = r"C:\Users\User\Documents\1 Cuatrimestre UTN Programacion\J2TR4AQ3AFDEHIMSLSVWIZXH6Q.jpg"
 
 lista_nba = leer_archivo(ruta)
 

@@ -13,10 +13,6 @@ def leer_archivo(archivo_json:str) -> list:
         lista_nba = diccionario["jugadores"]
     return lista_nba
 
-ruta = r"C:\Users\User\Documents\1 Cuatrimestre UTN Programacion\parcial\dt.json"
-
-lista_nba = leer_archivo(ruta)
-
 def muestra_jugador_posicion(lista:list):
     """
     muestra el nombre del jugador y su posicion en la cancha
@@ -30,20 +26,23 @@ def muestra_jugador_posicion(lista:list):
         contador += 1
     print(mensaje)
 
-def muestra_estadistica_por_indice(indice:int,lista:list) -> bool:
+def muestra_estadistica_por_indice(lista:list) -> int:
     """
     muestra las estadisticas de un jugador por su indice
     recive un indice y una lista por parametro
-    devuelve un bool True o False
+    devuelve un int usado para el case 3
     """
-    flag = False
-    mensaje = "{0}:\n".format(lista[indice]["nombre"])
-    for clave,valor in lista[indice]["estadisticas"].items():
-        mensaje += "{0}: {1}\n".format(clave.replace("_"," ").capitalize(),valor)
-        flag = True
-    if flag:
+    muestra_jugador_posicion(lista)
+    numero = input("Ingrese el numero del jugador para ver sus estadisticas: ")
+    indice = int(numero)
+    if re.search(r"^(?:[0-9]|1[0-1])$",numero) and int(numero) < len(lista):
+        mensaje = "{0}:\n".format(lista[indice]["nombre"])
+        for clave,valor in lista[indice]["estadisticas"].items():
+            mensaje += "{0}: {1}\n".format(clave.replace("_"," ").capitalize(),valor)
         print(mensaje)
-        return flag
+        return indice
+    else:
+        print("error")
 
 def guardar_csv(ruta:str,texto:str):
     """
@@ -139,13 +138,14 @@ def calcular_max_min_dato(lista:list,calculo_a_realizar:str,dato:str) -> list:
     return pedido
 
     
-def busca_y_muestra_por_nombre(nombre:str,lista:list,opcion:int):
+def busca_y_muestra_por_nombre(lista:list,opcion:int):
     """
     Busca por el nombre del jugador
     Recibe una lista, el nombre a buscar y la opcion por parametro
     No devuelve nada
     """
-    patron = rf"{nombre}"
+    nombre = input("Ingresa el nombre a buscar: ")
+    patron = rf"{nombre.lower()}"
     segundo_patron = r"^Miembro del Salon de la Fama del Baloncesto$"
     mensaje = ""
     for jugador in lista:
@@ -250,6 +250,18 @@ def quick_sort(lista:list,clave:str,flag:bool):
     lista_iz.extend(lista_de)
     return lista_iz
 
+def calcula_muestra_por_clave_todo_el_equipo(lista:list,clave:str,flag:bool,clave_estadistica:str):
+    """
+    Calcula y muestra por orden ascendente la clave pedida de todo el equipo
+    recibe una lista, clave,flag, clave de la estadistica por parametro
+    no retorna nada
+    """
+    lista_ordenada = quick_sort(lista,clave,flag)
+    mensaje = ""
+    for jugador in lista_ordenada:
+        mensaje += "Nombre: {0} - {1}: {2}\n".format(jugador["nombre"],clave_estadistica.replace("_"," "),jugador["estadisticas"][clave_estadistica])
+    print(mensaje)
+
 def muestra_jugadores_mayor_que_valor_dado(valor:int,clave:str,lista:list):
     """
     Muestra los jugadores que superen cierto valor
@@ -286,12 +298,25 @@ def muestra_jugador_por_posicion(lista:list,clave:str,lista_posicion:list,valor:
     else:
         print("No hay jugadores que promediaron mas que {0}".format(valor))
 
-def crea_ranking_dream_team(lista:list,lista_titulo:list):
+def muestra_por_valor_dado_o_posicion(lista:list,clave:str,flag:bool):
+    lista_posicion = ["Base","Escolta","Alero","Ala-Pivot","Pivot"]
+    valor = input("Ingresa un valor: ")
+    dato_valido = re.search(r"^[0-9]+$",valor)
+    if dato_valido:
+        if flag:
+            muestra_jugadores_mayor_que_valor_dado(int(valor),clave,lista)
+        else:
+            muestra_jugador_por_posicion(lista,clave,lista_posicion,int(valor))
+    else:
+        print("Solo numeros enteros")
+
+def crea_ranking_dream_team(lista:list):
     """
     Crea un texto del ranking del dream team para mandar a guardar a csv
     Recibe una lista de los jugadores y una lista con el titulo del archivo por parametro
     No retorna nada
     """
+    lista_titulo = ["Jugador","Puntos","Rebotes","Asistencias","Robos"]
     lista_puntos = quick_sort_estadistica(lista,"puntos_totales",False)
     lista_asistencia = quick_sort_estadistica(lista,"asistencias_totales",False)
     lista_rebotes = quick_sort_estadistica(lista,"rebotes_totales",False)
@@ -321,7 +346,150 @@ def crea_ranking_dream_team(lista:list,lista_titulo:list):
         mensaje += "{0},{1},{2},{3},{4}\n".format(jugador["nombre"], indice_puntos, indice_rebotes, indice_asistencias, indice_robos)
     texto_csv = titulo + "\n" + mensaje
     guardar_csv("Ranking_DreamTeam.csv",texto_csv)
-                    
+
+def cuenta_por_posicion(lista:list):
+    """
+    Cuenta cuantos jugadores hay por posicion
+    Recibe una lista por parametro
+    no retorna nada
+    """
+    contador_base = 0
+    contador_escolta = 0
+    contador_alero = 0
+    contador_alapivot = 0
+    contador_pivot = 0
+    for jugador in lista:
+        contador_base += jugador["posicion"].count("Base")
+        contador_escolta += jugador["posicion"].count("Escolta")
+        contador_alero += jugador["posicion"].count("Alero")
+        contador_alapivot += jugador["posicion"].count("Ala-Pivot")
+        contador_pivot += jugador["posicion"].count("Pivot")
+    mensaje = "Hay estos jugadores en cada posicion: \nBase: {0}\nEscolta: {1}\nAlero: {2}\nAla-Pivot: {3}\nPivot: {4}".format(contador_base,contador_escolta,contador_alero,contador_alapivot,contador_pivot)
+    print(mensaje)
+
+def quick_sort_all_star(lista:list,flag:bool,lista_all_star:list):
+    """
+    Es un algoritmo de ordenamiento de forma asc o desc
+    Recibe una lista, una clave y un flag por parametro
+    No retorna nada
+    """
+    lista_de_all_star = []
+    lista_iz_all_star = []
+    lista_iz = []
+    lista_de = []
+    if len(lista_all_star) <= 1:
+            return lista_all_star
+    else:
+
+        cantidad = len(lista_all_star)
+        pivot = lista_all_star[0]
+        pivot_2 = lista[0]
+        for i in range(1,cantidad):
+            if flag == True and lista_all_star[i] > pivot or flag == False and lista_all_star[i] < pivot:
+                lista_de_all_star.append(lista_all_star[i])
+                lista_de.append(lista[i])
+            elif flag == True and lista_all_star[i] <= pivot or flag == False and lista_all_star[i] >= pivot:
+                lista_iz_all_star.append(lista_all_star[i])
+                lista_iz.append(lista[i])
+
+    lista_iz_all_star = quick_sort_all_star(lista_iz,flag,lista_iz_all_star)
+    lista_iz_all_star.append(pivot)
+    lista_iz.append(pivot_2)
+    lista_de_all_star = quick_sort_all_star(lista_de,flag,lista_de_all_star)
+    lista_iz_all_star.extend(lista_de_all_star)
+    lista_iz.extend(lista_de)
+    return lista_iz_all_star
+
+def muestra_por_all_star(lista:list):
+    """
+    Muestra los all star de los jugadores de forma descendiente
+    recibe una lista por parametro
+    no retorna nada
+    """
+    patron = r"All-Star"
+    lista_all_star_previa = []
+    for jugador in lista:
+        for logro in jugador["logros"]:
+            if re.search(patron,logro):
+                numero = ""
+                for letra in logro:
+                    if letra.isdigit():
+                        numero += letra
+                lista_all_star_previa.append(int(numero))
+    lista_all_star_set = set(lista_all_star_previa)
+    lista_all_star = []
+    for numero in lista_all_star_set:
+        lista_all_star.append(numero)
+    lista_ordenada = quick_sort_all_star(lista,False,lista_all_star)
+    patron_2 = ""
+    for numero in lista_ordenada:
+        patron_2 = rf"{numero} veces All-Star"
+        for jugador in lista:
+            for logro in jugador["logros"]:
+                if re.search(patron_2,logro):
+                    mensaje = "{0} - {1}".format(jugador["nombre"],patron_2)
+                    print(mensaje)
+
+
+def muestra_por_max_min(lista: list, clave: str, calculo: str):
+    """
+    Muestra al max o min de la estadistica que eligas
+    Recibe una lista, una clave y el calculo que quieras seguir por parametro
+    no retorna nada
+    """
+    lista_maximo = calcular_max_min_dato(lista, calculo, clave)
+    lista_jugador = []
+    suma_final = suma(lista, clave)
+    if type(lista[0]["estadisticas"][clave]) == int:
+        mensaje = "La cantidad de {0} totales es de: {1} siendo ".format(clave.replace("_"," "),suma_final)
+        for jugador in lista:
+                if lista_maximo[0] == jugador["estadisticas"][clave]:
+                        lista_jugador.append(jugador["nombre"])
+        texto = ",".join(lista_jugador)
+        mensaje += texto + " los/el maximo con {0} {1}".format(lista_maximo[0],clave.replace("_"," "),suma_final)
+        print(mensaje)
+    elif type(lista[0]["estadisticas"][clave]) == float:
+        promedio = sacar_promedio(suma_final,lista)
+        mensaje = "El {0} es de: {1} siendo {2} el jugador con la cantidad mas alta de: {3}".format(clave.replace("_"," "),promedio,lista_maximo[1],lista_maximo[0])
+        print(mensaje)
+
+def muestra_mejor_jugador_estadistica(lista:list):
+    """
+    Encuentra al mejor jugador de las estadisticas y lo muestra
+    recibe una lista por parametro
+    no devuelve nada
+    """
+    max_jugador = None
+    max_puntaje = 0
+
+    for jugador in lista:
+        estadistica_total = 0
+        for clave,valor in jugador["estadisticas"].items():
+            estadistica_total += valor
+        if max_jugador == None or estadistica_total > max_puntaje:
+            max_jugador = jugador["nombre"]
+            max_puntaje = estadistica_total
+    print("El que tiene las mejores estadisticas es: {0}".format(max_jugador))
+    print("Igual es jordan y no se acepta debate")
+
+def muestra_mejor_promedio_sin_el_peor(lista:list,clave:str):
+    """
+    Muestra el promedio sin el peor del equipo
+    recibe una lista y una clave por parametro
+    No devuelve nada
+    """
+    lista_ordenada = quick_sort_estadistica(lista,clave,True)
+    suma_final = suma(lista[1:],clave)
+    promedio = sacar_promedio(suma_final,lista_ordenada[1:])
+    mensaje = "El promedio de puntos por partido sin el jugador de menor cantidad es de: {0} ".format(promedio)
+    print(mensaje)
+
+def muestra_jugador_mas_logros(lista:list,clave:str):
+    lista_ordenada = quick_sort(lista,clave,False)
+    suma_final = suma_logros(lista_ordenada,clave)
+    mensaje = "La cantidad de logros obtenidos es de: {0} siendo {1} el jugador con la cantidad mas alta de: {2}".format(suma_final,lista_ordenada[0]["nombre"],len(lista_ordenada[0][clave]))
+    print(mensaje)
+
 def imprimir_menu():
     """
     Imprime el menu
@@ -350,6 +518,7 @@ def imprimir_menu():
     print("19. Calcular y mostrar el jugador con la mayor cantidad de temporadas jugadas")
     print("20. Ingresar un valor y mostrar los jugadores , ordenados por posición en la cancha, que hayan tenido un porcentaje de tiros de campo superior a ese valor")
     print("23. Ingresar un valor y mostrar los")
+    print("24. Punto extra")
     print("0. Salir del menu")
 
 def validar_entero(numero:str) -> bool:
@@ -358,7 +527,7 @@ def validar_entero(numero:str) -> bool:
     Recibe un numero entero
     Retorna un bool True o False
     """
-    patron = r"^(?:[0-9]|1[0-9]|2[0-3])$"
+    patron = r"^(?:[0-9]|1[0-9]|2[0-4])$"
     if re.match(patron, str(numero)):
         return True
     else:
@@ -379,13 +548,16 @@ def nba_menu_principal() -> int:
     else:
         return -1
 
-def nba_app(lista_jugadores:list):
+def nba_app():
     """
     Corre la app haciendo lo que pediste por el menu
     Recibe una lista por parametro
     No retorna nada
     """
+    ruta = r"C:\Users\User\Documents\1 Cuatrimestre UTN Programacion\parcial\dt.json"
+    lista_jugadores = leer_archivo(ruta)
     flag_case_2 = False
+    numero = "0"
     while(True):
         opcion_int = nba_menu_principal()
         if(type(opcion_int) == int):
@@ -393,139 +565,76 @@ def nba_app(lista_jugadores:list):
                 case 1:
                     muestra_jugador_posicion(lista_jugadores)
                 case 2:
-                    muestra_jugador_posicion(lista_jugadores)
-                    numero = input("Ingrese el numero del jugador para ver sus estadisticas: ")
-                    if re.search(r"^(?:[0-9]|1[0-1])$",numero):
-                        if int(numero) < len(lista_jugadores):
-                            flag_case_2 = muestra_estadistica_por_indice(int(numero),lista_jugadores)
-                    else:
-                        print("error")
+                    numero = muestra_estadistica_por_indice(lista_jugadores)
+                    flag_case_2 = True
                 case 3:
-                    if flag_case_2:
-                        crear_texto_por_indice(int(numero),lista_jugadores,flag_case_2)
-                    else:
-                        print("No usaste punto 2")
+                    crear_texto_por_indice(numero,lista_jugadores,flag_case_2)
                 case 4:
-                    nombre = input("Ingresa el nombre a buscar: ")
-                    busca_y_muestra_por_nombre(nombre.lower(),lista_jugadores,4)
+                    busca_y_muestra_por_nombre(lista_jugadores,4)
                 case 5:
-                    lista = quick_sort(lista_jugadores,"nombre",True)
-                    mensaje = ""
-                    for jugador in lista:
-                        mensaje += "Nombre: {0} - puntos por partido: {1}\n".format(jugador["nombre"],jugador["estadisticas"]["promedio_puntos_por_partido"])
-                    print(mensaje)
+                    calcula_muestra_por_clave_todo_el_equipo(lista_jugadores,"nombre",True,"promedio_puntos_por_partido")
                 case 6:
-                    nombre = input("Ingresa el nombre a buscar: ")
-                    busca_y_muestra_por_nombre(nombre.lower(),lista_jugadores,6)
+                    busca_y_muestra_por_nombre(lista_jugadores,6)
                 case 7:
-                    clave = "rebotes_totales"
-                    lista_maximo = calcular_max_min_dato(lista_jugadores,"maximo",clave)
-                    suma_final = suma(lista_jugadores,clave)
-                    mensaje = "La cantidad de rebotes totales es de: {0} siendo {1} el jugador con la cantidad mas alta de: {2}".format(suma_final,lista_maximo[1],lista_maximo[0])
-                    print(mensaje)
+                    muestra_por_max_min(lista_jugadores,"robos_totales","maximo")
                 case 8:
-                    clave = "porcentaje_tiros_de_campo"
-                    lista_maximo = calcular_max_min_dato(lista_jugadores,"maximo",clave)
-                    suma_final = suma(lista_jugadores,clave)
-                    promedio = sacar_promedio(suma_final,lista_jugadores)
-                    mensaje = "El promedio de porcentaje tiros de campo es de: {0} siendo {1} el jugador con la cantidad mas alta de: {2}".format(promedio,lista_maximo[1],lista_maximo[0])
-                    print(mensaje)
+                    muestra_por_max_min(lista_jugadores,"porcentaje_tiros_de_campo","maximo")
                 case 9:
-                    clave = "asistencias_totales"
-                    lista_maximo = calcular_max_min_dato(lista_jugadores,"maximo",clave)
-                    suma_final = suma(lista_jugadores,clave)
-                    mensaje = "La cantidad de asistencias totales es de: {0} siendo {1} el jugador con la cantidad mas alta de: {2}".format(suma_final,lista_maximo[1],lista_maximo[0])
-                    print(mensaje)
+                    muestra_por_max_min(lista_jugadores,"asistencias_totales","maximo")
                 case 10:
-                    clave = "promedio_puntos_por_partido"
-                    valor = input("Ingresa un valor: ")
-                    dato_valido = re.search(r"^[0-9]+$",valor)
-                    if dato_valido:
-                        muestra_jugadores_mayor_que_valor_dado(int(valor),clave,lista_jugadores)
-                    else:
-                        print("Solo numeros enteros")
+                    muestra_por_valor_dado_o_posicion(lista_jugadores,"promedio_puntos_por_partido",True)
                 case 11:
-                    clave = "promedio_rebotes_por_partido"
-                    valor = input("Ingresa un valor: ")
-                    dato_valido = re.search(r"^[0-9]+$",valor)
-                    if dato_valido:
-                        muestra_jugadores_mayor_que_valor_dado(int(valor),clave,lista_jugadores)
-                    else:
-                        print("Solo numeros enteros")
+                    muestra_por_valor_dado_o_posicion(lista_jugadores,"promedio_rebotes_por_partido",True)
                 case 12:
-                    clave = "promedio_asistencias_por_partido"
-                    valor = input("Ingresa un valor: ")
-                    dato_valido = re.search(r"^[0-9]+$",valor)
-                    if dato_valido:
-                        muestra_jugadores_mayor_que_valor_dado(int(valor),clave,lista_jugadores)
-                    else:
-                        print("Solo numeros enteros")
+                    muestra_por_valor_dado_o_posicion(lista_jugadores,"promedio_asistencias_por_partido",True)
                 case 13:
-                    clave = "robos_totales"
-                    lista_maximo = calcular_max_min_dato(lista_jugadores,"maximo",clave)
-                    suma_final = suma(lista_jugadores,clave)
-                    mensaje = "La cantidad de robos totales es de: {0} siendo {1} el jugador con la cantidad mas alta de: {2}".format(suma_final,lista_maximo[1],lista_maximo[0])
-                    print(mensaje)
+                    muestra_por_max_min(lista_jugadores,"robos_totales","maximo")
                 case 14:
-                    clave = "bloqueos_totales"
-                    lista_maximo = calcular_max_min_dato(lista_jugadores,"maximo",clave)
-                    suma_final = suma(lista_jugadores,clave)
-                    mensaje = "La cantidad de bloqueos totales es de: {0} siendo {1} el jugador con la cantidad mas alta de: {2}".format(suma_final,lista_maximo[1],lista_maximo[0])
-                    print(mensaje)
+                    muestra_por_max_min(lista_jugadores,"bloqueos_totales","maximo")
                 case 15:
-                    clave = "porcentaje_tiros_libres"
-                    valor = input("Ingresa un valor: ")
-                    dato_valido = re.search(r"^[0-9]+$",valor)
-                    if dato_valido:
-                        muestra_jugadores_mayor_que_valor_dado(int(valor),clave,lista_jugadores)
-                    else:
-                        print("Solo numeros enteros")
+                    muestra_por_valor_dado_o_posicion(lista_jugadores,"porcentaje_tiros_libres",True)
                 case 16:
-                    clave = "promedio_puntos_por_partido"
-                    lista = quick_sort_estadistica(lista_jugadores,clave,True)
-                    suma_final = suma(lista[1:],clave)
-                    promedio = sacar_promedio(suma_final,lista[1:])
-                    mensaje = "El promedio de puntos por partido sin el jugador de menor cantidad es de: {0} ".format(promedio)
-                    print(mensaje)
+                    muestra_mejor_promedio_sin_el_peor(lista_jugadores,"promedio_puntos_por_partido")
                 case 17:
-                    clave = "logros"
-                    lista = quick_sort(lista_jugadores,clave,False)
-                    suma_final = suma_logros(lista,clave)
-                    mensaje = "La cantidad de logros obtenidos es de: {0} siendo {1} el jugador con la cantidad mas alta de: {2}".format(suma_final,lista[0]["nombre"],len(lista[0][clave]))
-                    print(mensaje)
+                    muestra_jugador_mas_logros(lista_jugadores,"logros")
                 case 18:
-                    clave = "porcentaje_tiros_triples"
-                    valor = input("Ingresa un valor: ")
-                    dato_valido = re.search(r"^[0-9]+$",valor)
-                    if dato_valido:
-                        muestra_jugadores_mayor_que_valor_dado(int(valor),clave,lista_jugadores)
-                    else:
-                        print("Solo numeros enteros")
+                    muestra_por_valor_dado_o_posicion(lista_jugadores,"porcentaje_tiros_triples",True)
                 case 19:
-                    clave = "temporadas"
-                    lista_maximo = calcular_max_min_dato(lista_jugadores,"maximo",clave)
-                    lista_jugador = []
-                    suma_final = suma(lista_jugadores,clave)
-                    mensaje = "La cantidad de temporadas totales es de: {0} siendo ".format(suma_final)
-                    for jugador in lista_jugadores:
-                        if lista_maximo[0] == jugador["estadisticas"]["temporadas"]:
-                            lista_jugador.append(jugador["nombre"])
-                    texto = ",".join(lista_jugador)
-                    mensaje += texto + " los maximos con {0} temporadas".format(lista_maximo[0])
-                    print(mensaje) 
+                    muestra_por_max_min(lista_jugadores,"temporadas","maximo")
                 case 20:
-                    clave = "porcentaje_tiros_de_campo"
-                    lista_posicion = ["Base","Escolta","Alero","Ala-Pivot","Pivot"]
-                    valor = input("Ingresa un valor: ")
-                    dato_valido = re.search(r"^[0-9]+$",valor)
-                    if dato_valido:
-                        muestra_jugador_por_posicion(lista_jugadores,clave,lista_posicion,int(valor))
-                    else:
-                        print("Solo numeros enteros")
+                    muestra_por_valor_dado_o_posicion(lista_jugadores,"porcentaje_tiros_triples",False)
                 case 23:
-                    lista_titulo = ["Jugador","Puntos","Rebotes","Asistencias","Robos"]
-                    crea_ranking_dream_team(lista_jugadores,lista_titulo)
-
+                    crea_ranking_dream_team(lista_jugadores)
+                case 24:
+                    print("1. Determinar la cantidad de jugadores que hay por cada posición")
+                    print("2. Mostrar la lista de jugadores ordenadas por la cantidad de All-Star de forma descendente")
+                    print("3. Determinar qué jugador tiene las mejores estadísticas en cada valor")
+                    print("4. Determinar qué jugador tiene las mejores estadísticas de todos")
+                    opcion_2 = input("Eliga una opcion del 1-4: ")
+                    if re.search(r"[1-4]{1}",opcion_2):
+                        opcion_2_int = int(opcion_2)
+                        match opcion_2_int:
+                            case 1:
+                                cuenta_por_posicion(lista_jugadores)
+                            case 2:
+                                muestra_por_all_star(lista_jugadores)
+                            case 3:
+                                muestra_por_max_min(lista_jugadores,"temporadas","maximo")
+                                muestra_por_max_min(lista_jugadores,"puntos_totales","maximo")
+                                muestra_por_max_min(lista_jugadores,"promedio_puntos_por_partido","maximo")
+                                muestra_por_max_min(lista_jugadores,"rebotes_totales","maximo")
+                                muestra_por_max_min(lista_jugadores,"promedio_rebotes_por_partido","maximo")
+                                muestra_por_max_min(lista_jugadores,"asistencias_totales","maximo")
+                                muestra_por_max_min(lista_jugadores,"promedio_asistencias_por_partido","maximo")
+                                muestra_por_max_min(lista_jugadores,"robos_totales","maximo")
+                                muestra_por_max_min(lista_jugadores,"bloqueos_totales","maximo")
+                                muestra_por_max_min(lista_jugadores,"porcentaje_tiros_de_campo","maximo")
+                                muestra_por_max_min(lista_jugadores,"porcentaje_tiros_libres","maximo")
+                                muestra_por_max_min(lista_jugadores,"porcentaje_tiros_triples","maximo")
+                            case 4:
+                                muestra_mejor_jugador_estadistica(lista_jugadores)
+                    else:
+                        print("Numero entero del 1-4 nomas")
                 case 0:
                     break
                 case _:
@@ -533,6 +642,5 @@ def nba_app(lista_jugadores:list):
         else:
             print("Opcion no valida,numeros del 0 al 23 sin el 21 o 22")
         
-nba_app(lista_nba)
+nba_app()
 #Ivan Matias Cantero
-
